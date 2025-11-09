@@ -1,0 +1,7 @@
+# 从当前目录里import所有子任务流程函数
+from .pick_crack_from_another_table import pick_crack_from_another_table
+from .put_crack_on_another_table import put_crack_on_another_table
+from .setup_front_crack import setup_front_crack
+from .push_front_crack import push_front_crack
+from .pull_out_crack import pull_out_crack
+from .pick_front_crack import pick_front_crack

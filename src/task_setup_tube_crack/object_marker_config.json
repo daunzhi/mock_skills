@@ -1,0 +1,171 @@
+{
+    "formal_crack_20": {
+        "pick_crack_remote": {
+            "tf_name": "pick_crack_remote_tf",
+            "marker_id": 20,
+            "expected_count": 4,
+            "arms": ["left","right"],
+            "base_shift": [0.005, 0.005, -0.002],
+            "runtime_shift_limits": [0.05, 0.05, 0.01],
+            "ignore_z": true,
+            "grasp_gripper_config": {
+                "left_position": 0.04,
+                "left_force": 50,
+                "right_position": 0.04,
+                "right_force": 50
+            }
+        },
+        "push_crack": {
+            "tf_name": "observe_front_crack_for_push_tf",
+            "marker_id": 20,
+            "expected_count": 4,
+            "arms": ["left","right"],
+            "base_shift": [0.093,-0.008,-0.023],
+            "runtime_shift_limits": [0.008, 0.008, 0.005],
+            "ignore_z": true,
+            "grasp_gripper_config": {
+                "right_position": 0.03,
+                "right_force": 50
+            }
+        },
+        "pull_crack": {
+            "tf_name": "return_rube_crack_observe_crack2_tf",
+            "marker_id": 20,
+            "expected_count": 4,
+            "arms": ["left","right"],
+            "base_shift": [0.148, 0, -0.002],
+            "runtime_shift_limits": [0.005, 0.005, 0.003],
+            "ignore_z": true,
+            "grasp_gripper_config": {
+                "right_position": 0.07,
+                "right_force": 30
+            }
+        },
+        "pick_crack": {
+            "tf_name": "return_rube_crack_observe_front_crack_tf",
+            "marker_id": 20,
+            "expected_count": 4,
+            "arms": ["left","right"],
+            "base_shift": [0, -0.002, -0.001],
+            "runtime_shift_limits": [0.01, 0.008, 0.005],
+            "ignore_z": true,
+            "grasp_gripper_config": {
+                "left_position": 0.04,
+                "left_force": 50,
+                "right_position": 0.04,
+                "right_force": 50
+            },
+            "release_remote_gripper_config": {
+                "left_position": 0.06,
+                "left_force": 50,
+                "right_position": 0.06,
+                "right_force": 50
+            }
+        },
+        "setup_crack": {
+            "base_shift": [0.008, 0.0025, -0.021],
+            "release_gripper_config": {
+                "left_position": 0.06,
+                "left_force": 40,
+                "right_position": 0.06,
+                "right_force": 40
+            },
+            "origin_crack": false
+        }
+    },
+    "origin_crack_23": {
+        "pick_crack_remote": {
+            "tf_name": "pick_crack_remote_origin_23_tf",
+            "marker_id": 23,
+            "expected_count": 4,
+            "arms": ["left","right"],
+            "base_shift": [0.005, 0.0045, 0.017],
+            "runtime_shift_limits": [0.25, 0.25, 0.01],
+            "ignore_z": true,
+            "grasp_gripper_config": {
+                "left_position": 0.025,
+                "left_force": 35,
+                "right_position": 0.025,
+                "right_force": 35
+            }
+        },
+        "push_crack": {
+            "tf_name": "observe_front_crack_for_push_origin_23_tf",
+            "marker_id": 23,
+            "expected_count": 4,
+            "arms": ["left","right"],
+            "base_shift": [0.103,0.009,-0.013],
+            "runtime_shift_limits": [0.015, 0.015, 0.005],
+            "ignore_z": true,
+            "grasp_gripper_config": {
+                "right_position": 0.08,
+                "right_force": 30
+            }
+        },
+        "pull_crack": {
+            "tf_name": "return_rube_crack_observe_crack2_origin_23_tf",
+            "marker_id": 23,
+            "expected_count": 4,
+            "arms": ["left","right"],
+            "base_shift": [0.149, 0.0035, 0.003],
+            "runtime_shift_limits": [0.015, 0.015, 0.01],
+            "ignore_z": true,
+            "grasp_gripper_config": {
+                "right_position": 0.07,
+                "right_force": 30
+            }
+        },
+        "pick_crack": {
+            "tf_name": "return_rube_crack_observe_front_crack_origin_23_tf",
+            "marker_id": 23,
+            "expected_count": 4,
+            "arms": ["left","right"],
+            "base_shift": [-0.005, 0.000, 0.022],
+            "runtime_shift_limits": [0.04, 0.01, 0.005],
+            "ignore_z": true,
+            "grasp_gripper_config": {
+                "left_position": 0.025,
+                "left_force": 35,
+                "right_position": 0.025,
+                "right_force": 35
+            },
+            "release_remote_gripper_config": {
+                "left_position": 0.05,
+                "left_force": 30,
+                "right_position": 0.05,
+                "right_force": 30
+            },
+            "origin_crack": true
+        },
+        "setup_crack": {
+            "base_shift": [0.008, 0.0025, -0.001],
+            "release_gripper_config": {
+                "left_position": 0.06,
+                "left_force": 40,
+                "right_position": 0.06,
+                "right_force": 40
+            },
+            "origin_crack": true
+        }
+    },
+    "column_machine_base": {
+        "setup_crack": {
+            "tf_name": "setup_front_crack_base_tf",
+            "marker_id": 34,
+            "expected_count": 8,
+            "arms": ["right"],
+            "base_shift": [0, 0, 0],
+            "runtime_shift_limits": [0.02, 0.01, 0.01],
+            "ignore_z": true
+        },
+        "pull_crack": {
+            "tf_name": "return_rube_crack_base_tf",
+            "marker_id": 34,
+            "expected_count": 4,
+            "arms": ["left", "right"],
+            "base_shift": null,
+            "runtime_shift_limits": [0.01, 0.01, 0.01],
+            "ignore_z": true
+        }
+    }
+}
