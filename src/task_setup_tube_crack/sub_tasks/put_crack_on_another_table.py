@@ -16,7 +16,7 @@ put_crack_on_another_table.py - 试管架放置到其他台面任务
 
 import time
 
-from aico2 import LabbotManagerClient
+from src.client.aico2 import LabbotManagerClient
 
 def put_crack_on_another_table(crack_config: dict):
     """

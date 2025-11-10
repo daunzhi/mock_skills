@@ -21,7 +21,7 @@ from copy import deepcopy
 from loguru import logger
 import const as Const
 
-from aico2 import LabbotManagerClient
+from src.client.aico2 import LabbotManagerClient
 from src.util.util import reverse_trajectory_file, safe_get_tf_shift, safe_move_j, safe_plan_fast_move_j_to_dual_arm
 
 def pick_crack_from_another_table(crack_config: dict):

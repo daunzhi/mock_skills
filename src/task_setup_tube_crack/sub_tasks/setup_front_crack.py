@@ -21,7 +21,7 @@ import json
 from loguru import logger
 import const as Const
 
-from aico2 import LabbotManagerClient
+from src.client.aico2 import LabbotManagerClient
 from src.util.util import safe_get_tf_shift, safe_plan_fast_move_j_to_dual_arm
 
 def setup_front_crack(crack_config: dict, column_machine_config: dict):

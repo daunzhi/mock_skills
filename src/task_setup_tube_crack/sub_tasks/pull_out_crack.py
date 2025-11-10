@@ -6,7 +6,7 @@ import numpy as np
 from copy import deepcopy
 from loguru import logger
 
-from aico2 import LabbotManagerClient
+from src.client.aico2 import LabbotManagerClient
 from src.util.util import safe_get_tf_shift, safe_fast_move_j_to
 
 def pull_out_crack(column_machine_config: dict, crack_config: dict):
