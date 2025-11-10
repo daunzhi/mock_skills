@@ -190,18 +190,8 @@ class LabbotManagerClientBase:
             wait: 是否等待执行完成
             execute: 是否执行运动
             use_arms: 指定要使用的机械臂列表，如"left_arm,right_arm"或"left_arm"
-        
-        Examples:
-            python3 movej_test_client.py move_j "0,0" "0,0,0,0,0,0,0" "90,0,0,0,0,0,0" --degree
-            python3 movej_test_client.py move_j "0,0" "0,0,0,0,0,0,0" "90,0,0,0,0,0,0" --use_arms="left_arm"
         """
         print(f"\n=== 绝对关节运动 ===\n")
-        print(f"躯干目标位置: {body_positions}")
-        print(f"左臂目标位置: {left_positions}")
-        print(f"右臂目标位置: {right_positions}")
-        print(f"单位: {'角度' if degree else '弧度'}")
-        print(f"速度: {speed}, 加速度: {acc}")
-        print(f"执行: {execute}, 等待: {wait}")
         
         # 解析位置参数
         body_pos = self._parse_positions(body_positions)
@@ -211,37 +201,25 @@ class LabbotManagerClientBase:
         if body_pos is None or left_pos is None or right_pos is None:
             return False
         
-        # 验证躯干关节数量（应该是2个自由度）
-        if len(body_pos) != 2:
-            print(f"错误: 躯干关节应该有2个自由度，但提供了{len(body_pos)}个")
-            return False
-        
         # 角度转弧度
         if degree:
             body_pos = self._degrees_to_radians(body_pos)
             left_pos = self._degrees_to_radians(left_pos)
             right_pos = self._degrees_to_radians(right_pos)
-            print(f"转换后躯干位置(弧度): {[f'{x:.4f}' for x in body_pos]}")
-            print(f"转换后左臂位置(弧度): {[f'{x:.4f}' for x in left_pos]}")
-            print(f"转换后右臂位置(弧度): {[f'{x:.4f}' for x in right_pos]}")
         
         # 构造请求参数
         arm_requests = []
         
-        # 检查躯干是否有非零位置（如果不是全零，则添加躯干请求）
-        # if any(abs(pos) > 1e-6 for pos in body_pos):
         arm_requests.append({
             "arm_name": "body",
             "joint_positions": body_pos
         })
         
-        # 添加左臂请求
         arm_requests.append({
             "arm_name": "left",
             "joint_positions": left_pos
         })
         
-        # 添加右臂请求
         arm_requests.append({
             "arm_name": "right",
             "joint_positions": right_pos
@@ -257,8 +235,6 @@ class LabbotManagerClientBase:
             "use_arms": use_arms.split(",")
         }
         
-        print(f"\n发送请求: {json.dumps(movej_request, indent=2, ensure_ascii=False)}")
-        
         try:
             response = requests.post(
                 f"{self.server_url}/move_j",
@@ -270,20 +246,9 @@ class LabbotManagerClientBase:
             if response.status_code == 200:
                 result = response.json()
                 print("\n✅ 请求成功!")
-                print(f"响应: {json.dumps(result, indent=2, ensure_ascii=False)}")
-                
-                # 显示最终关节位置
-                if result.get('final_joint_positions'):
-                    final_pos = result['final_joint_positions']
-                    print(f"\n最终关节位置: {[f'{x:.4f}' for x in final_pos]}")
-                    if degree:
-                        final_degrees = [math.degrees(x) for x in final_pos]
-                        print(f"最终关节位置(角度): {[f'{x:.2f}' for x in final_degrees]}")
-                
                 return result
             else:
                 print(f"\n❌ 请求失败，状态码: {response.status_code}")
-                print(f"错误信息: {response.text}")
                 return False
                 
         except requests.exceptions.RequestException as e:
@@ -298,21 +263,8 @@ class LabbotManagerClientBase:
             marker_id: 要查找的AprilTag标记ID（默认0）
             repeat_times: 重复查找次数（默认4次）
             repeat_time_interval: 每次重复查找的时间间隔（秒）（默认0.1秒）
-        
-        Examples:
-            python3 labbot_manager.py find_apriltag --arm=left --marker_id=5
-            python3 labbot_manager.py find_apriltag --arm=right --marker_id=10
         """
         print(f"\n=== 查找AprilTag标记 ===\n")
-        print(f"使用手臂: {arm}")
-        print(f"标记ID: {marker_id}")
-        print(f"重复次数: {repeat_times}")
-        print(f"重复时间间隔: {repeat_time_interval}秒")
-        
-        # 验证手臂参数
-        if arm not in ["left", "right"]:
-            print(f"❌ 无效的手臂名称: {arm}，必须是 'left' 或 'right'")
-            return False
         
         # 构造请求参数
         apriltag_request = {
@@ -321,8 +273,6 @@ class LabbotManagerClientBase:
             "repeat_times": int(repeat_times),
             "repeat_time_interval": float(repeat_time_interval)
         }
-        
-        print(f"\n发送请求: {json.dumps(apriltag_request, indent=2, ensure_ascii=False)}")
         
         try:
             response = requests.post(
@@ -335,38 +285,9 @@ class LabbotManagerClientBase:
             if response.status_code == 200:
                 result = response.json()
                 print("\n✅ 请求成功!")
-                print(f"响应: {json.dumps(result, indent=2, ensure_ascii=False)}")
-                
-                # 显示AprilTag信息
-                if result.get('code') == 200:  # ErrorCode.Success
-                    position = result.get('position', [])
-                    quaternion = result.get('quaternion', [])
-                    rotation_matrix = result.get('rotation_matrix', [])
-                    
-                    if position:
-                        print(f"\n📍 AprilTag位置 (机器人坐标系):")
-                        print(f"   X: {position[0]:.4f} m")
-                        print(f"   Y: {position[1]:.4f} m")
-                        print(f"   Z: {position[2]:.4f} m")
-                    
-                    if quaternion:
-                        print(f"\n🔄 AprilTag姿态四元数:")
-                        print(f"   X: {quaternion[0]:.4f}")
-                        print(f"   Y: {quaternion[1]:.4f}")
-                        print(f"   Z: {quaternion[2]:.4f}")
-                        print(f"   W: {quaternion[3]:.4f}")
-                    
-                    if rotation_matrix:
-                        print(f"\n📐 旋转矩阵:")
-                        for i, row in enumerate(rotation_matrix):
-                            print(f"   [{row[0]:8.4f}, {row[1]:8.4f}, {row[2]:8.4f}]")
-                else:
-                    print(f"\n⚠️ 未找到AprilTag: {result.get('msg', '未知错误')}")
-                
-                return True
+                return result
             else:
                 print(f"\n❌ 请求失败，状态码: {response.status_code}")
-                print(f"错误信息: {response.text}")
                 return False
                 
         except requests.exceptions.RequestException as e:
@@ -382,32 +303,8 @@ class LabbotManagerClientBase:
             marker_id: 要瞄准的AprilTag标记ID（默认0）
             distance: 距离AprilTag的目标距离，单位米（默认0.3）
             execute: 是否执行运动，False时只规划不执行（默认True）
-        
-        Examples:
-            python3 labbot_manager.py aim_at_apriltag --arm=left --marker_id=5 --distance=0.2
-            python3 labbot_manager.py aim_at_apriltag --arm=right --marker_id=10 --distance=0.5
-            python3 labbot_manager.py aim_at_apriltag --arm=left --marker_id=0 --distance=0.3 --execute=False
         """
         print(f"\n=== 瞄准AprilTag标记 ===\n")
-        print(f"使用手臂: {arm}")
-        print(f"标记ID: {marker_id}")
-        print(f"目标距离: {distance} 米")
-        print(f"执行模式: {'执行运动' if execute else '仅规划'}")
-        
-        # 验证手臂参数
-        if arm not in ["left", "right"]:
-            print(f"❌ 无效的手臂名称: {arm}，必须是 'left' 或 'right'")
-            return False
-        
-        # 验证距离参数
-        try:
-            distance = float(distance)
-            if distance <= 0:
-                print(f"❌ 无效的距离值: {distance}，必须大于0")
-                return False
-        except ValueError:
-            print(f"❌ 无效的距离值: {distance}，必须是数字")
-            return False
         
         # 构造请求参数
         aim_request = {
@@ -416,8 +313,6 @@ class LabbotManagerClientBase:
             "distance": distance,
             "execute": execute
         }
-        
-        print(f"\n发送请求: {json.dumps(aim_request, indent=2, ensure_ascii=False)}")
         
         try:
             response = requests.post(
@@ -430,40 +325,9 @@ class LabbotManagerClientBase:
             if response.status_code == 200:
                 result = response.json()
                 print("\n✅ 请求成功!")
-                print(f"响应: {json.dumps(result, indent=2, ensure_ascii=False)}")
-                
-                # 显示瞄准结果
-                if result.get('code') == 200:  # ErrorCode.Success
-                    apriltag_position = result.get('apriltag_position', [])
-                    aim_position = result.get('aim_position', [])
-                    actual_distance = result.get('distance', 0.0)
-                    trajectory_path = result.get('trajectory_path', '')
-                    
-                    if apriltag_position:
-                        print(f"\n📍 AprilTag位置 (机器人坐标系):")
-                        print(f"   X: {apriltag_position[0]:.4f} m")
-                        print(f"   Y: {apriltag_position[1]:.4f} m")
-                        print(f"   Z: {apriltag_position[2]:.4f} m")
-                    
-                    if aim_position:
-                        print(f"\n🎯 瞄准位置 (机器人坐标系):")
-                        print(f"   X: {aim_position[0]:.4f} m")
-                        print(f"   Y: {aim_position[1]:.4f} m")
-                        print(f"   Z: {aim_position[2]:.4f} m")
-                    
-                    print(f"\n📏 实际距离: {actual_distance:.3f} m")
-                    
-                    if trajectory_path:
-                        print(f"\n💾 轨迹文件: {trajectory_path}")
-                    
-                    print(f"\n🎉 成功瞄准AprilTag标记 {marker_id}!")
-                else:
-                    print(f"\n⚠️ 瞄准失败: {result.get('msg', '未知错误')}")
-                
-                return True
+                return result
             else:
                 print(f"\n❌ 请求失败，状态码: {response.status_code}")
-                print(f"错误信息: {response.text}")
                 return False
                 
         except requests.exceptions.RequestException as e:
@@ -471,17 +335,11 @@ class LabbotManagerClientBase:
             return False
     
     def action_back(self):
-        """反向执行上一个轨迹
-        
-        Examples:
-            python3 labbot_manager.py action_back
-        """
+        """反向执行上一个轨迹"""
         print(f"\n=== 反向执行上一个轨迹 ===\n")
         
         # 构造请求参数（ActionBackRequest为空）
         action_back_request = {}
-        
-        print(f"发送请求: {json.dumps(action_back_request, indent=2, ensure_ascii=False)}")
         
         try:
             response = requests.post(
@@ -494,45 +352,9 @@ class LabbotManagerClientBase:
             if response.status_code == 200:
                 result = response.json()
                 print("\n✅ 请求成功!")
-                print(f"响应: {json.dumps(result, indent=2, ensure_ascii=False)}")
-                
-                # 显示执行结果
-                if result.get('code') == 200:  # ErrorCode.Success
-                    task_found = result.get('task_found', False)
-                    task_timestamp = result.get('task_timestamp', '')
-                    task_type = result.get('task_type', '')
-                    original_trajectory_path = result.get('original_trajectory_path', '')
-                    reversed_trajectory_path = result.get('reversed_trajectory_path', '')
-                    smoothed_trajectory_path = result.get('smoothed_trajectory_path', '')
-                    execution_result = result.get('execution_result', '')
-                    
-                    if task_found:
-                        print(f"\n📋 找到任务:")
-                        print(f"   时间戳: {task_timestamp}")
-                        print(f"   任务类型: {task_type}")
-                        
-                        if original_trajectory_path:
-                            print(f"\n📁 原始轨迹文件: {original_trajectory_path}")
-                        
-                        if reversed_trajectory_path:
-                            print(f"🔄 反向轨迹文件: {reversed_trajectory_path}")
-                        
-                        if smoothed_trajectory_path:
-                            print(f"✨ 平滑轨迹文件: {smoothed_trajectory_path}")
-                        
-                        if execution_result:
-                            print(f"\n🎯 执行结果: {execution_result}")
-                        
-                        print(f"\n🎉 成功反向执行轨迹!")
-                    else:
-                        print(f"\n⚠️ 未找到可反向执行的任务")
-                else:
-                    print(f"\n⚠️ 反向执行失败: {result.get('msg', '未知错误')}")
-                
-                return True
+                return result
             else:
                 print(f"\n❌ 请求失败，状态码: {response.status_code}")
-                print(f"错误信息: {response.text}")
                 return False
                 
         except requests.exceptions.RequestException as e:
@@ -544,25 +366,13 @@ class LabbotManagerClientBase:
         
         Args:
             arm_name: 手臂名称，left 或 right（默认left）
-        
-        Examples:
-            python3 labbot_manager.py clear_fault --arm_name=left
-            python3 labbot_manager.py clear_fault --arm_name=right
         """
         print(f"\n=== 清除机器人故障 ===\n")
-        print(f"手臂名称: {arm_name}")
-        
-        # 验证手臂参数
-        if arm_name not in ["left", "right"]:
-            print(f"❌ 无效的手臂名称: {arm_name}，必须是 'left' 或 'right'")
-            return False
         
         # 构造请求参数
         clear_fault_request = {
             "arm_name": arm_name
         }
-        
-        print(f"\n发送请求: {json.dumps(clear_fault_request, indent=2, ensure_ascii=False)}")
         
         try:
             response = requests.post(
@@ -575,18 +385,9 @@ class LabbotManagerClientBase:
             if response.status_code == 200:
                 result = response.json()
                 print("\n✅ 请求成功!")
-                print(f"响应: {json.dumps(result, indent=2, ensure_ascii=False)}")
-                
-                # 显示清除故障结果
-                if result.get('code') == 200:  # ErrorCode.Success
-                    print(f"\n🎉 成功清除 {arm_name} 手臂故障!")
-                else:
-                    print(f"\n⚠️ 清除故障失败: {result.get('msg', '未知错误')}")
-                
-                return True
+                return result
             else:
                 print(f"\n❌ 请求失败，状态码: {response.status_code}")
-                print(f"错误信息: {response.text}")
                 return False
                 
         except requests.exceptions.RequestException as e:
@@ -601,42 +402,19 @@ class LabbotManagerClientBase:
             primitive_name: 原语名称
             input_params: 输入参数的JSON字符串（默认为空对象）
             block_until_started: 是否阻塞直到开始执行（默认True）
-        
-        Examples:
-            python3 labbot_manager.py execute_primitive --arm=left --primitive_name="move_to_pose" --input_params='{"x":0.5,"y":0.0,"z":0.3}'
-            python3 labbot_manager.py execute_primitive --arm=right --primitive_name="gripper_open" --input_params='{}'
         """
         print(f"\n=== 执行机器人原语命令 ===\n")
-        print(f"手臂名称: {arm}")
-        print(f"原语名称: {primitive_name}")
-        print(f"输入参数: {input_params}")
-        print(f"阻塞直到开始: {block_until_started}")
-        
-        # 验证手臂参数
-        if arm not in ["left", "right"]:
-            print(f"❌ 无效的手臂名称: {arm}，必须是 'left' 或 'right'")
-            return False
-        
-        # 验证原语名称
-        if not primitive_name.strip():
-            print(f"❌ 原语名称不能为空")
-            return False
         
         # 解析输入参数
         if isinstance(input_params, str):
             try:
                 params_dict = json.loads(input_params)
-                if not isinstance(params_dict, dict):
-                    print(f"❌ 输入参数必须是有效的JSON对象")
-                    return False
-            except json.JSONDecodeError as e:
-                print(f"❌ 输入参数JSON格式错误: {e}")
-                return False
+            except json.JSONDecodeError:
+                params_dict = {}
         elif isinstance(input_params, dict):
             params_dict = input_params
         else:
-            print(f"❌ 输入参数必须是字符串或字典")
-            return False
+            params_dict = {}
         
         # 构造请求参数
         execute_primitive_request = {
@@ -645,8 +423,6 @@ class LabbotManagerClientBase:
             "input_params": params_dict,
             "block_until_started": bool(block_until_started)
         }
-        
-        print(f"\n发送请求: {json.dumps(execute_primitive_request, indent=2, ensure_ascii=False)}")
         
         try:
             response = requests.post(
@@ -659,21 +435,9 @@ class LabbotManagerClientBase:
             if response.status_code == 200:
                 result = response.json()
                 print("\n✅ 请求成功!")
-                print(f"响应: {json.dumps(result, indent=2, ensure_ascii=False)}")
-                
-                # 显示执行结果
-                if result.get('code') == 200:  # ErrorCode.Success
-                    print(f"\n🎉 成功执行原语命令!")
-                    print(f"   手臂: {arm}")
-                    print(f"   原语: {primitive_name}")
-                    print(f"   参数: {params_dict}")
-                else:
-                    print(f"\n⚠️ 原语执行失败: {result.get('msg', '未知错误')}")
-                
-                return True
+                return result
             else:
                 print(f"\n❌ 请求失败，状态码: {response.status_code}")
-                print(f"错误信息: {response.text}")
                 return False
                 
         except requests.exceptions.RequestException as e:
@@ -686,32 +450,14 @@ class LabbotManagerClientBase:
         Args:
             arm: 手臂名称，left 或 right
             plan_name: 计划名称
-        
-        Examples:
-            python3 labbot_manager.py execute_plan left "my_plan"
-            python3 labbot_manager.py execute_plan right "grasp_plan"
         """
         print(f"\n=== 执行轨迹计划 ===\n")
-        print(f"手臂: {arm}")
-        print(f"计划名称: {plan_name}")
-        
-        # 验证手臂参数
-        if arm not in ["left", "right"]:
-            print(f"❌ 无效的手臂名称: {arm}，必须是 'left' 或 'right'")
-            return False
-        
-        # 验证计划名称
-        if not plan_name or not isinstance(plan_name, str):
-            print(f"❌ 无效的计划名称: {plan_name}")
-            return False
         
         # 构造请求参数
         execute_plan_request = {
             "arm": arm,
             "plan_name": plan_name
         }
-        
-        print(f"\n发送请求: {json.dumps(execute_plan_request, indent=2, ensure_ascii=False)}")
         
         try:
             response = requests.post(
@@ -724,27 +470,9 @@ class LabbotManagerClientBase:
             if response.status_code == 200:
                 result = response.json()
                 print("\n✅ 请求成功!")
-                print(f"响应: {json.dumps(result, indent=2, ensure_ascii=False)}")
-                
-                # 显示执行结果
-                if result.get('code') == 200:  # ErrorCode.Success
-                    execution_time = result.get('execution_time', 0.0)
-                    trajectory_points = result.get('trajectory_points', 0)
-                    
-                    print(f"\n🎉 成功执行轨迹计划!")
-                    print(f"   手臂: {arm}")
-                    print(f"   计划名称: {plan_name}")
-                    if trajectory_points > 0:
-                        print(f"   轨迹点数: {trajectory_points}")
-                    if execution_time > 0:
-                        print(f"   执行时间: {execution_time:.2f} 秒")
-                else:
-                    print(f"\n⚠️ 轨迹执行失败: {result.get('msg', '未知错误')}")
-                
-                return True
+                return result
             else:
                 print(f"\n❌ 请求失败，状态码: {response.status_code}")
-                print(f"错误信息: {response.text}")
                 return False
                 
         except requests.exceptions.RequestException as e:
