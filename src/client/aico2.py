@@ -225,58 +225,6 @@ class LabbotManagerClient(LabbotManagerClientBase):
         except Exception:
             return False
 
-    def sync_real(self):
-        """从aico2真机获取status，然后仿真机器move_j过去"""
-        try:
-            result = self.status(remote_host="192.168.12.206")
-            if result:
-                joint_states = result['joint_states']
-                self.move_j(
-                    body_positions=joint_states[:2],
-                    left_positions=joint_states[2:9],
-                    right_positions=joint_states[9:],
-                )
-                return True
-        except Exception:
-            pass
-        return False
-
-    def run_last_traj_in_real(self):
-        """在真机上运行最后一次执行的轨迹
-        
-        Args:
-            speed: 执行速度 (0.0-1.0)
-            acc: 执行加速度 (0.0-1.0)
-            wait: 是否等待执行完成
-        
-        Returns:
-            bool: 成功返回True，失败返回False
-        """
-        try:
-            traj_dir = Path.home() / ".aico2" / "executed_traj"
-            if not traj_dir.exists():
-                return False
-            
-            pattern = str(traj_dir / "trajectory_*.json")
-            traj_files = glob.glob(pattern)
-            
-            if not traj_files:
-                return False
-            
-            # 找到最新的文件
-            latest_file = max(traj_files, key=os.path.getmtime)
-            traj_id = Path(latest_file).stem
-            
-            # 执行轨迹
-            result = self.run_traj(
-                traj_id=traj_id,
-                remote_host="192.168.1.92"
-            )
-            
-            return result and result.get('code') == 200
-        except Exception:
-            return False
-
 def main():
     """主函数，使用Fire创建命令行接口"""
     os.environ['PAGER'] = 'cat'
